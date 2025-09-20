@@ -17,10 +17,7 @@ connectDB();
 // 🔧 Enhanced CORS configuration
 app.use(
   cors({
-    origin: [
-      "https://project-mygallery-frontend.onrender.com",
-      "http://localhost:3000",
-    ], // Add your frontend URLs
+    origin: ["https://project-mygallery-frontend.onrender.com"], // Add your frontend URLs
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -73,5 +70,7 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(
+    `Server running at https://project-mygallery-backend.onrender.com`
+  );
 });
