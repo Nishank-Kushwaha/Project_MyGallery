@@ -93,11 +93,14 @@ export const createResetPasswordAction = async (data) => {
   };
 
   try {
-    const res = await fetch("http://localhost:8080/auth/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData),
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/reset-password",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      }
+    );
 
     const result = await res.json();
     console.log("Data received from reset-password backend:", result);

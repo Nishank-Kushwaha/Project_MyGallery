@@ -80,11 +80,14 @@ export const createVerifyCodeAction = async (data) => {
   };
 
   try {
-    const res = await fetch("http://localhost:8080/auth/verify-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData),
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/verify-otp",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      }
+    );
 
     const result = await res.json();
     console.log("Data received from verify-otp backend:", result);

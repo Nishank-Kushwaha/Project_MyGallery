@@ -98,12 +98,15 @@ export const UploadPhotoAction = async (data) => {
     formData.append("userStatus", loginStatus);
     formData.append("userData", JSON.stringify(loginData));
 
-    const res = await fetch("http://localhost:8080/auth/uploadphoto", {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-      // ✅ Let fetch handle Content-Type automatically for multipart/form-data
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/uploadphoto",
+      {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        // ✅ Let fetch handle Content-Type automatically for multipart/form-data
+      }
+    );
 
     console.log("Response status:", res.status);
     console.log("Response headers:", res.headers);

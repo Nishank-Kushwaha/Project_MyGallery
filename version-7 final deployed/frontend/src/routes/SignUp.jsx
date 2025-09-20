@@ -125,11 +125,14 @@ export const createSignUpAction = async (data) => {
   console.log("Data collected from signUp form:", SignUpData);
 
   try {
-    const res = await fetch("http://localhost:8080/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(SignUpData),
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/signup",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(SignUpData),
+      }
+    );
 
     const result = await res.json();
     console.log("Data received from signUp backend:", result);

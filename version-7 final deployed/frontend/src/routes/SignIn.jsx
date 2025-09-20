@@ -6,7 +6,8 @@ const SignIn = () => {
   const handleGoogleLogin = async () => {
     try {
       // Start Google login flow
-      window.location.href = "http://localhost:8080/auth/google";
+      window.location.href =
+        "https://project-mygallery-backend.onrender.com/auth/google";
     } catch (error) {
       console.error("Google login failed", error);
     }
@@ -184,11 +185,14 @@ export const createSignInAction = async (data) => {
   console.log("Data collected from signIn form:", SignInData);
 
   try {
-    const res = await fetch("http://localhost:8080/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(SignInData),
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/signin",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(SignInData),
+      }
+    );
 
     const result = await res.json();
     console.log("Data received from signIn backend:", result);

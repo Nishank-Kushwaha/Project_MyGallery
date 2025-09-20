@@ -68,11 +68,14 @@ export const createForgotPasswordAction = async (data) => {
   console.log("Data collected from ForgotPassword form:", forgotPasswordData);
 
   try {
-    const res = await fetch("http://localhost:8080/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(forgotPasswordData),
-    });
+    const res = await fetch(
+      "https://project-mygallery-backend.onrender.com/auth/forgot-password",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(forgotPasswordData),
+      }
+    );
 
     const result = await res.json();
     console.log("Data received from forgot-password backend:", result);

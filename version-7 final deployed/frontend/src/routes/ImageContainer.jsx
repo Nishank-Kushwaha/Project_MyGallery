@@ -32,13 +32,16 @@ const Image = ({ img, onImageClick, index, setImages }) => {
 
     try {
       // ✅ Await fetch
-      const response = await fetch("http://localhost:8080/auth/delete-photo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(deleteImageDetails),
-      });
+      const response = await fetch(
+        "https://project-mygallery-backend.onrender.com/auth/delete-photo",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(deleteImageDetails),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -204,17 +207,20 @@ const ImageContainer = () => {
     console.log("LoginData in Upload form", loginData);
 
     try {
-      const response = await fetch("http://localhost:8080/auth/get-photos", {
-        method: "POST",
-        body: JSON.stringify({
-          userStatus: loginStatus,
-          userData: loginData,
-        }),
-        credentials: "include", // Include cookies/session
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://project-mygallery-backend.onrender.com/auth/get-photos",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            userStatus: loginStatus,
+            userData: loginData,
+          }),
+          credentials: "include", // Include cookies/session
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
