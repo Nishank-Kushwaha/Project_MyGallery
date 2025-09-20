@@ -76,7 +76,8 @@ passport.deserializeUser(async (id, done) => {
 // Google callback controller
 exports.googleCallback = (req, res) => {
   const user = req.user;
-  const baseUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const baseUrl =
+    process.env.CLIENT_URL || "https://project-mygallery-frontend.onrender.com";
 
   if (user) {
     const result = {

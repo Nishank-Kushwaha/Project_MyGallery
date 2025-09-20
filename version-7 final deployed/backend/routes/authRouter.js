@@ -60,7 +60,7 @@ authRouter.get(
 const clientUrl = (process.env.CLIENT_URL || "").trim();
 const failureRedirect = clientUrl
   ? `${clientUrl}/signin`
-  : "http://localhost:5173/signin";
+  : "https://project-mygallery-frontend.onrender.com/signin";
 
 authRouter.get(
   "/google/callback",
