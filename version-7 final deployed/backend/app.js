@@ -17,10 +17,14 @@ connectDB();
 // 🔧 Enhanced CORS configuration
 app.use(
   cors({
-    origin: ["https://project-mygallery-frontend.onrender.com"], // Add your frontend URLs
+    origin: [
+      "https://project-mygallery-frontend.onrender.com",
+      "http://localhost:5173" // For local development
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 200 // For legacy browser support
   })
 );
 
@@ -33,7 +37,12 @@ app.use(
     secret: process.env.SESSION_SECRET || "super-secret",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production', // true for HTTPS, false for HTTP
+      httpOnly: true, // Prevent XSS attacks
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'none' // Required for cross-origin cookies in production
+    },
   })
 );
 
