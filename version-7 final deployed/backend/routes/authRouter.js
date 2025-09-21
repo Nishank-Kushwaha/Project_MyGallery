@@ -2,19 +2,22 @@ const express = require("express");
 const multer = require("multer");
 const passport = require("passport");
 const path = require("path");
+const fs = require("fs");
 const authController = require("../controllers/authController");
 
 const authRouter = express.Router();
 
-// Multer storage config (temporary local storage before Cloudinary upload)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../public/uploads"));
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, "../public/uploads");
+if (!fs.existsSync(path.join(__dirname, "../public"))) {
+  fs.mkdirSync(path.join(__dirname, "../public"), { recursive: true });
+}
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer storage config - use memory storage for better cloud deployment
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,

@@ -19,6 +19,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Log Cloudinary configuration (without secrets)
+console.log("Cloudinary configured:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY ? "✅ Set" : "❌ Missing",
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "✅ Set" : "❌ Missing"
+});
+
 // Google OAuth Strategy
 passport.use(
   new GoogleStrategy(
@@ -360,6 +367,13 @@ exports.resetPassword = async (req, res) => {
 
 exports.uploadPhoto = async (req, res) => {
   try {
+    console.log("Upload request received:", {
+      hasFile: !!req.file,
+      fileSize: req.file?.size,
+      fileType: req.file?.mimetype,
+      fileName: req.file?.originalname
+    });
+
     if (!req.file) {
       return res
         .status(400)
@@ -379,9 +393,8 @@ exports.uploadPhoto = async (req, res) => {
     const parsedUserData = JSON.parse(req.body.userData);
     const userObjectId = parsedUserData.data._id;
 
-    // ✅ Compute hash from uploaded file
-    const filePath = req.file.path;
-    const fileBuffer = fs_.readFileSync(filePath);
+    // ✅ Compute hash from uploaded file buffer (memory storage)
+    const fileBuffer = req.file.buffer;
     const fileHash = crypto
       .createHash("sha256")
       .update(fileBuffer)
@@ -391,15 +404,12 @@ exports.uploadPhoto = async (req, res) => {
     const existingPhoto = await Photo.findOne({ hash: fileHash });
 
     if (existingPhoto) {
-      // Add uploader to existing photo and delete local file
+      // Add uploader to existing photo (no file cleanup needed with memory storage)
       const updated = await Photo.findByIdAndUpdate(
         existingPhoto._id,
         { $addToSet: { uploadedBy: userObjectId } },
         { new: true }
       ).populate("uploadedBy");
-
-      // Delete the uploaded file since we're using existing Cloudinary image
-      fs_.unlinkSync(filePath);
 
       return res.json({
         status: true,
@@ -408,15 +418,23 @@ exports.uploadPhoto = async (req, res) => {
       });
     }
 
-    // ✅ Upload to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(filePath, {
-      folder: "gallery-app", // Optional: organize uploads in a folder
-      resource_type: "auto", // Automatically detect file type
-      public_id: `${Date.now()}-${req.file.originalname.split(".")[0]}`, // Custom public_id
+    // ✅ Upload to Cloudinary from buffer (memory storage)
+    const cloudinaryResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "gallery-app", // Optional: organize uploads in a folder
+          resource_type: "auto", // Automatically detect file type
+          public_id: `${Date.now()}-${req.file.originalname.split(".")[0]}`, // Custom public_id
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(fileBuffer);
     });
-
-    // ✅ Delete local file after successful Cloudinary upload
-    fs_.unlinkSync(filePath);
 
     // ✅ Save new photo with Cloudinary data
     const photo = new Photo({
@@ -441,15 +459,7 @@ exports.uploadPhoto = async (req, res) => {
   } catch (error) {
     console.error("Upload error:", error);
 
-    // Clean up local file if it exists and upload failed
-    if (req.file && req.file.path) {
-      try {
-        fs_.unlinkSync(req.file.path);
-      } catch (cleanupError) {
-        console.error("Error cleaning up file:", cleanupError);
-      }
-    }
-
+    // No file cleanup needed with memory storage
     res.status(500).json({
       status: false,
       message: "Internal server error: " + error.message,
