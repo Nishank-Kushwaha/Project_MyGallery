@@ -366,83 +366,116 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.uploadPhoto = async (req, res) => {
+  console.log("\n=== UPLOAD PHOTO REQUEST START ===");
+  
   try {
-    console.log("Upload request received:", {
-      hasFile: !!req.file,
-      fileSize: req.file?.size,
-      fileType: req.file?.mimetype,
-      fileName: req.file?.originalname
+    // Step 1: Basic request validation
+    console.log("Step 1 - Request validation:");
+    console.log("- Has file:", !!req.file);
+    console.log("- Has body:", !!req.body);
+    console.log("- Body keys:", Object.keys(req.body || {}));
+    
+    if (!req.file) {
+      console.log("❌ No file uploaded");
+      return res.status(400).json({ status: false, message: "No file uploaded" });
+    }
+    
+    console.log("✅ File received:", {
+      size: req.file.size,
+      type: req.file.mimetype,
+      name: req.file.originalname,
+      hasBuffer: !!req.file.buffer,
+      bufferLength: req.file.buffer?.length
     });
 
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ status: false, message: "No file uploaded" });
-    }
-
-    // ✅ Validate file type
+    // Step 2: File type validation
+    console.log("\nStep 2 - File type validation:");
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(req.file.mimetype)) {
+      console.log("❌ Invalid file type:", req.file.mimetype);
       return res.status(400).json({
         status: false,
         message: "Only JPEG, JPG, PNG, and GIF files are allowed",
       });
     }
+    console.log("✅ File type valid:", req.file.mimetype);
 
-    // ✅ Parse user data
-    const parsedUserData = JSON.parse(req.body.userData);
-    const userObjectId = parsedUserData.data._id;
+    // Step 3: Parse user data
+    console.log("\nStep 3 - User data parsing:");
+    let parsedUserData, userObjectId;
+    try {
+      console.log("- Raw userData:", req.body.userData);
+      parsedUserData = JSON.parse(req.body.userData);
+      userObjectId = parsedUserData.data._id;
+      console.log("✅ User data parsed, ID:", userObjectId);
+    } catch (parseError) {
+      console.log("❌ User data parse error:", parseError.message);
+      return res.status(400).json({
+        status: false,
+        message: "Invalid user data format"
+      });
+    }
 
-    // ✅ Compute hash from uploaded file buffer (memory storage)
+    // Step 4: File hash computation
+    console.log("\nStep 4 - Computing file hash:");
     const fileBuffer = req.file.buffer;
-    const fileHash = crypto
-      .createHash("sha256")
-      .update(fileBuffer)
-      .digest("hex");
+    const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
+    console.log("✅ File hash computed:", fileHash.substring(0, 16) + "...");
 
-    // ✅ Check for duplicates first
+    // Step 5: Check for duplicates
+    console.log("\nStep 5 - Duplicate check:");
     const existingPhoto = await Photo.findOne({ hash: fileHash });
-
     if (existingPhoto) {
-      // Add uploader to existing photo (no file cleanup needed with memory storage)
+      console.log("🔄 Duplicate found, adding uploader to existing photo");
       const updated = await Photo.findByIdAndUpdate(
         existingPhoto._id,
         { $addToSet: { uploadedBy: userObjectId } },
         { new: true }
-      ).populate("uploadedBy");
-
+      );
       return res.json({
         status: true,
         message: "Uploader added to existing photo",
         data: updated,
       });
     }
+    console.log("✅ No duplicate found, proceeding with upload");
 
-    // ✅ Upload to Cloudinary from buffer (memory storage)
+    // Step 6: Cloudinary upload
+    console.log("\nStep 6 - Cloudinary upload:");
+    console.log("- Cloudinary config check:", {
+      cloud_name: !!process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: !!process.env.CLOUDINARY_API_KEY,
+      api_secret: !!process.env.CLOUDINARY_API_SECRET
+    });
+    
     const cloudinaryResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
+      const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: "gallery-app", // Optional: organize uploads in a folder
-          resource_type: "auto", // Automatically detect file type
-          public_id: `${Date.now()}-${req.file.originalname.split(".")[0]}`, // Custom public_id
+          folder: "gallery-app",
+          resource_type: "auto",
+          public_id: `${Date.now()}-${req.file.originalname.split(".")[0]}`,
         },
         (error, result) => {
           if (error) {
+            console.log("❌ Cloudinary error:", error);
             reject(error);
           } else {
+            console.log("✅ Cloudinary upload successful:", result.secure_url);
             resolve(result);
           }
         }
-      ).end(fileBuffer);
+      );
+      uploadStream.end(fileBuffer);
     });
 
-    // ✅ Save new photo with Cloudinary data
+    // Step 7: Save to database
+    console.log("\nStep 7 - Database save:");
     const photo = new Photo({
-      filename: req.file.filename, // Keep original filename for reference
+      filename: `${Date.now()}-${req.file.originalname}`,
       originalName: req.file.originalname,
       description: req.body.description || "",
-      fileUrl: cloudinaryResult.secure_url, // Use Cloudinary URL
-      cloudinaryPublicId: cloudinaryResult.public_id, // Store for deletion
+      fileUrl: cloudinaryResult.secure_url,
+      cloudinaryPublicId: cloudinaryResult.public_id,
       size: req.file.size,
       mimetype: req.file.mimetype,
       hash: fileHash,
@@ -450,19 +483,26 @@ exports.uploadPhoto = async (req, res) => {
     });
 
     const savedPhoto = await photo.save();
+    console.log("✅ Photo saved to database:", savedPhoto._id);
 
+    console.log("\n=== UPLOAD SUCCESSFUL ===");
     res.json({
       status: true,
       message: "Photo uploaded successfully to Cloudinary",
       data: savedPhoto,
     });
+    
   } catch (error) {
-    console.error("Upload error:", error);
+    console.log("\n❌ === UPLOAD ERROR ===");
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
 
-    // No file cleanup needed with memory storage
     res.status(500).json({
       status: false,
-      message: "Internal server error: " + error.message,
+      message: `Upload failed: ${error.message}`,
     });
   }
 };
