@@ -103,8 +103,8 @@ A comprehensive showcase of iterative development: from a simple photo gallery t
    ```
 
 4. **Access Application**
-   - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:8080`
+   - Frontend: `https://project-mygallery-frontend.onrender.com`
+   - Backend API: `https://project-mygallery-backend.onrender.com`
 
 ## 📊 Development Journey Insights
 
