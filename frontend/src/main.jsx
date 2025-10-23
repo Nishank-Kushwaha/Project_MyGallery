@@ -21,6 +21,7 @@ import UpdatePassword, {
 } from "./routes/UpdatePassword.jsx";
 
 import UploadPhoto, { UploadPhotoAction } from "./routes/UploadPhoto.jsx";
+import CameraCaptureDialog from "./routes/CameraCaptureDialog.jsx";
 
 import PageNotFound from "./components/PageNotFound.jsx";
 
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
         path: "/uploadphoto",
         element: <UploadPhoto />,
         action: UploadPhotoAction,
+      },
+      {
+        path: "/cameracapture",
+        element: <CameraCaptureDialog />,
       },
       {
         path: "*",

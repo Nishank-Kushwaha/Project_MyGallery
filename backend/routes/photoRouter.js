@@ -32,8 +32,8 @@ const upload = multer({
 // Photo management routes
 photoRouter.post(
   "/uploadphoto",
-  upload.single("photo"),
-  authMiddleware,
+  authMiddleware, // ✅ Auth first
+  upload.single("photo"), // ✅ Then upload
   photoController.uploadPhoto
 );
 photoRouter.post("/get-photos", authMiddleware, photoController.getPhotos);

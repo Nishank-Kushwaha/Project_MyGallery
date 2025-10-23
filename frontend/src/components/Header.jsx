@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginActions } from "../store/LoginSlice";
 import Upload from "./Upload";
 import Store from "../store";
+import { IoCamera } from "react-icons/io5";
 
 const Header = () => {
   const loginObj = useSelector((store) => store.login);
@@ -62,6 +63,12 @@ const Header = () => {
               >
                 Log out
               </button>
+              <Link
+                to="/cameracapture"
+                className="text-gray-300 py-4 px-4 rounded hover:text-blue-400"
+              >
+                <IoCamera size={25} />
+              </Link>
 
               <Upload />
             </>
