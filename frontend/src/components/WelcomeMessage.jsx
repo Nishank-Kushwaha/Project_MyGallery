@@ -7,7 +7,9 @@ const WelcomeMessage = () => {
 
   return (
     <div className="text-2xl font-bold text-center p-2  text-white rounded-lg shadow-lg">
-      {loginStatus ? `Hi ${loginData.data.name}` : "Login Remaining"}
+      {loginStatus
+        ? `Hi ${loginData.data.name.split(" ")[0]}`
+        : "Login Remaining"}
     </div>
   );
 };

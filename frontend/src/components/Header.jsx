@@ -1,17 +1,18 @@
 import { Link, redirect } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import WelcomeMessage from "./WelcomeMessage";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { loginActions } from "../store/LoginSlice";
 import Upload from "./Upload";
 import Store from "../store";
 import { IoCamera } from "react-icons/io5";
+import { LogOut, Menu, RotateCcwKey } from "lucide-react";
+import { useState } from "react";
 
 const Header = () => {
   const loginObj = useSelector((store) => store.login);
   const loginStatus = loginObj.loginStatus;
-
-  const dispatch = useDispatch();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleOnLogOut = async () => {
     try {
@@ -38,54 +39,88 @@ const Header = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white">
+    <div className="relative bg-gray-900 text-white">
       <nav className="flex justify-between items-center p-6">
         <div className="flex items-center">
           <Link to="/">
-            <FaHome className="ml-2 font-bold text-4xl hover:text-blue-400" />
+            <FaHome
+              className="ml-2 font-bold text-4xl hover:text-blue-400"
+              title="home"
+            />
           </Link>
+          <WelcomeMessage />
         </div>
         <div className="flex space-x-4">
-          <WelcomeMessage />
-
           {loginStatus ? (
-            <>
-              <Link
-                to="/updatepassword"
-                className="bg-blue-600 text-white py-4 px-4 rounded hover:bg-blue-500 "
+            isOpen ? (
+              <div
+                className="absolute w-fit h-fit z-50 rounded-lg"
+                style={{
+                  backgroundColor: "rgb(17 24 39)",
+                  boxShadow: "0 3px 12px white",
+                  display: "flex",
+                  flexDirection: "row-reverse",
+                  right: "20px",
+                  top: "15px",
+                }}
               >
-                Update Password
-              </Link>
-              <button
-                type="button"
-                className="text-gray-300 py-2 px-4 rounded hover:text-blue-400"
-                onClick={handleOnLogOut}
-              >
-                Log out
-              </button>
-              <Link
-                to="/cameracapture"
-                className="text-gray-300 py-4 px-4 rounded hover:text-blue-400"
-              >
-                <IoCamera size={25} />
-              </Link>
+                <button
+                  className="text-gray-300 py-4 px-6 flex items-center justify-center rounded hover:text-blue-400"
+                  title="close options"
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                >
+                  ⨯
+                </button>
+                <Link
+                  to="/updatepassword"
+                  className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400 "
+                  title="update password"
+                >
+                  <RotateCcwKey size={25} />
+                </Link>
 
-              <Upload />
-            </>
+                <Upload />
+
+                <Link
+                  to="/cameracapture"
+                  className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400"
+                  title="camera"
+                >
+                  <IoCamera size={25} />
+                </Link>
+
+                <button
+                  type="button"
+                  className="text-gray-300 py-2 px-4 rounded hover:text-blue-400"
+                  onClick={handleOnLogOut}
+                  title="logout"
+                >
+                  <LogOut />
+                </button>
+              </div>
+            ) : (
+              <div
+                className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400"
+                title="open options"
+              >
+                <Menu onClick={() => setIsOpen(true)} />
+              </div>
+            )
           ) : (
             <>
               <Link
                 to="/signin"
-                className="text-gray-300 py-2 px-4 rounded hover:text-blue-400"
+                className="text-gray-300 py-2 px-2 flex items-center justify-center rounded hover:text-blue-400"
               >
-                Log in
+                LogIn
               </Link>
 
               <Link
                 to="/signup"
-                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-500"
+                className="bg-blue-600 text-white py-2 px-4 flex items-center justify-center rounded hover:bg-blue-500"
               >
-                Sign up
+                SignUp
               </Link>
             </>
           )}
