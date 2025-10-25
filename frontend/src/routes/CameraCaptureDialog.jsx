@@ -12,12 +12,20 @@ export default function CameraCaptureDialog() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
+  // "user" = front, "environment" = back
+  const [facingMode, setFacingMode] = useState(() => {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    return isMobile ? "environment" : "user"; // back camera on mobile, front on desktop
+  });
+
   const navigate = useNavigate();
 
   const openDialog = async () => {
     setIsOpen(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -105,7 +113,9 @@ export default function CameraCaptureDialog() {
     setPreview(null);
     setPhoto(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -114,6 +124,30 @@ export default function CameraCaptureDialog() {
       console.error("Error accessing camera:", err);
       alert("Could not access camera. Please check permissions.");
       setIsOpen(false);
+    }
+  };
+
+  const switchCamera = async () => {
+    // Stop current camera
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
+    // Toggle facing mode
+    const newMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newMode);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newMode },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error switching camera:", err);
+      alert("Could not switch camera. Please check permissions.");
     }
   };
 
@@ -200,6 +234,12 @@ export default function CameraCaptureDialog() {
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
                   >
                     Capture
+                  </button>
+                  <button
+                    onClick={switchCamera}
+                    className="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition"
+                  >
+                    🔄 Switch Camera
                   </button>
                   <button
                     onClick={closeDialog}
