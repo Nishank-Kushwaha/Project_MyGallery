@@ -65,6 +65,10 @@ export default function CameraCaptureDialog() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
+      if (facingMode === "user") {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
         const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
@@ -223,7 +227,12 @@ export default function CameraCaptureDialog() {
                     ref={videoRef}
                     autoPlay
                     playsInline
-                    className="w-full h-full object-contain bg-black"
+                    className={`w-full h-full object-contain bg-black`}
+                    style={{
+                      transform: `${
+                        facingMode === "user" ? "scaleX(-1) " : "scaleX(1)"
+                      }`,
+                    }}
                   />
                   <canvas ref={canvasRef} style={{ display: "none" }} />
                 </>
