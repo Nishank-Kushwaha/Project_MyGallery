@@ -5,9 +5,9 @@ import { useSelector } from "react-redux";
 import { loginActions } from "../store/LoginSlice";
 import Upload from "./Upload";
 import Store from "../store";
-import { IoCamera } from "react-icons/io5";
-import { LogOut, Menu, RotateCcwKey } from "lucide-react";
+import { Camera, KeyRound, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { isMobile } from "react-device-detect";
 
 const Header = () => {
   const loginObj = useSelector((store) => store.login);
@@ -38,6 +38,17 @@ const Header = () => {
     }
   };
 
+  const UploadButton = () => (
+    <button
+      className="text-gray-300 py-4 px-4 flex items-center justify-center rounded-lg hover:text-blue-400 hover:bg-gray-800/50 transition-all duration-200"
+      title="upload"
+    >
+      <Upload size={22} />
+    </button>
+  );
+
+  console.log(isMobile);
+
   return (
     <div className="relative bg-gray-900 text-white">
       <nav className="flex justify-between items-center p-6">
@@ -48,64 +59,95 @@ const Header = () => {
               title="home"
             />
           </Link>
-          <WelcomeMessage />
+          {isMobile ? isOpen ? null : <WelcomeMessage /> : <WelcomeMessage />}
         </div>
         <div className="flex space-x-4">
           {loginStatus ? (
             isOpen ? (
               <div
-                className="absolute w-fit h-fit z-50 rounded-lg"
+                className="bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 overflow-hidden z-50"
                 style={{
-                  backgroundColor: "rgb(17 24 39)",
-                  boxShadow: "0 3px 12px white",
-                  display: "flex",
-                  flexDirection: "row-reverse",
-                  right: "20px",
-                  top: "15px",
+                  animation: "slideIn 0.2s ease-out",
                 }}
               >
-                <button
-                  className="text-gray-300 py-4 px-6 flex items-center justify-center rounded hover:text-blue-400"
-                  title="close options"
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                >
-                  ⨯
-                </button>
-                <Link
-                  to="/updatepassword"
-                  className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400 "
-                  title="update password"
-                >
-                  <RotateCcwKey size={25} />
-                </Link>
+                <style>{`
+            @keyframes slideIn {
+              from {
+                opacity: 0;
+                transform: translateY(-10px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+              .hover-red:hover {
+              color: red;
+            }
+          `}</style>
 
-                <Upload />
+                <div className="relative">
+                  {/* Close Button - Top Right */}
+                  <button
+                    className="absolute top-0 right-0 text-gray-400 p-1.5 flex items-center justify-center hover:text-gray-200 bg-gray-800 rounded-full border border-gray-700/50 hover:border-gray-600 transition-all duration-200 shadow-lg"
+                    title="Close Menu"
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <X size={15} />
+                  </button>
 
-                <Link
-                  to="/cameracapture"
-                  className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400"
-                  title="camera"
-                >
-                  <IoCamera size={25} />
-                </Link>
+                  {/* Menu Items */}
+                  <div className="flex items-center divide-x divide-gray-700/50">
+                    <Link
+                      to="/updatepassword"
+                      className="text-gray-300 py-4 px-4 flex items-center justify-center hover:text-blue-400 hover:bg-gray-800/50 transition-all duration-200 group"
+                      title="Update Password"
+                    >
+                      <KeyRound
+                        size={22}
+                        className="group-hover:rotate-12 transition-transform duration-200"
+                      />
+                    </Link>
 
-                <button
-                  type="button"
-                  className="text-gray-300 py-2 px-4 rounded hover:text-blue-400"
-                  onClick={handleOnLogOut}
-                  title="logout"
-                >
-                  <LogOut />
-                </button>
+                    <UploadButton />
+
+                    <Link
+                      to="/cameracapture"
+                      className="text-gray-300 py-4 px-4 flex items-center justify-center hover:text-blue-400 hover:bg-gray-800/50 transition-all duration-200 group"
+                      title="Camera"
+                    >
+                      <Camera
+                        size={22}
+                        className="group-hover:scale-110 transition-transform duration-200"
+                      />
+                    </Link>
+
+                    <button
+                      type="button"
+                      className="text-gray-300 py-4 px-4 flex items-center justify-center hover-red hover:bg-gray-800/50 transition-all duration-200 group"
+                      onClick={handleOnLogOut}
+                      title="Logout"
+                    >
+                      <LogOut
+                        size={22}
+                        className="group-hover:translate-x-0.5 transition-transform duration-200"
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div
-                className="text-gray-300 py-4 px-4 flex items-center justify-center rounded hover:text-blue-400"
-                title="open options"
+              <button
+                className="text-gray-300 p-3 flex items-center justify-center rounded-xl hover:text-blue-400 hover:bg-gray-900/50 transition-all duration-200 backdrop-blur-sm border border-transparent hover:border-gray-700/50 group"
+                title="Open Menu"
+                onClick={() => setIsOpen(true)}
               >
-                <Menu onClick={() => setIsOpen(true)} />
-              </div>
+                <Menu
+                  size={24}
+                  className="group-hover:rotate-90 transition-transform duration-300"
+                />
+              </button>
             )
           ) : (
             <>
