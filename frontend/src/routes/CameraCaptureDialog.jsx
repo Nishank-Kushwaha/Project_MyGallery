@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Store from "../store";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
+import { FlipHorizontal2, RefreshCw } from "lucide-react";
 
 export default function CameraCaptureDialog() {
   const [description, setDescription] = useState("");
@@ -19,6 +19,9 @@ export default function CameraCaptureDialog() {
     return isMobile ? "environment" : "user"; // back camera on mobile, front on desktop
   });
   const [isSwitching, setIsSwitching] = useState(false);
+
+  // NEW: Mirror toggle state - default true for natural mirror effect
+  const [mirrorFrontCamera, setMirrorFrontCamera] = useState(true);
 
   const navigate = useNavigate();
 
@@ -65,10 +68,13 @@ export default function CameraCaptureDialog() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
-      if (facingMode === "user") {
+
+      // Apply mirroring only if front camera AND mirror toggle is ON
+      if (facingMode === "user" && mirrorFrontCamera) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
       }
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
         const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
@@ -165,6 +171,11 @@ export default function CameraCaptureDialog() {
     }
   };
 
+  // NEW: Toggle mirror function
+  const toggleMirror = () => {
+    setMirrorFrontCamera(!mirrorFrontCamera);
+  };
+
   useEffect(() => {
     return () => {
       if (streamRef.current) {
@@ -172,6 +183,9 @@ export default function CameraCaptureDialog() {
       }
     };
   }, []);
+
+  // Determine if we should apply mirror effect to preview
+  const shouldMirrorPreview = facingMode === "user" && mirrorFrontCamera;
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -201,6 +215,64 @@ export default function CameraCaptureDialog() {
               />
             </div>
 
+            {/* Mirror Setting Toggle */}
+            <div className="flex items-center justify-between p-4 bg-slate-700 rounded-lg border border-slate-600">
+              <div className="flex items-center gap-3">
+                <FlipHorizontal2 className="w-5 h-5 text-slate-300" />
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Mirror Front Camera
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Save selfies as mirror image
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={toggleMirror}
+                role="switch"
+                aria-checked={mirrorFrontCamera}
+                style={{
+                  position: "relative",
+                  display: "inline-flex",
+                  height: "24px",
+                  width: "44px",
+                  flexShrink: 0,
+                  alignItems: "center",
+                  borderRadius: "9999px",
+                  transitionProperty: "background-color",
+                  transitionDuration: "200ms",
+                  outline: "none",
+                  backgroundColor: mirrorFrontCamera ? "#4f46e5" : "#64748b",
+                }}
+                onFocus={(e) => {
+                  e.target.style.boxShadow =
+                    "0 0 0 2px #1e293b, 0 0 0 4px #4f46e5";
+                }}
+                onBlur={(e) => {
+                  e.target.style.boxShadow = "none";
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    height: "16px",
+                    width: "16px",
+                    transform: mirrorFrontCamera
+                      ? "translateX(24px)"
+                      : "translateX(4px)",
+                    borderRadius: "9999px",
+                    backgroundColor: "#ffffff",
+                    boxShadow:
+                      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                    transitionProperty: "transform",
+                    transitionDuration: "200ms",
+                  }}
+                />
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={openDialog}
@@ -216,9 +288,19 @@ export default function CameraCaptureDialog() {
       {isOpen && (
         <div className="inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md relative shadow-xl">
-            <h2 className="text-white text-lg font-semibold mb-4">
-              {!preview ? "Capture Photo" : "Preview Photo"}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white text-lg font-semibold">
+                {!preview ? "Capture Photo" : "Preview Photo"}
+              </h2>
+
+              {/* Mirror indicator - only show when front camera is active and not in preview */}
+              {!preview && facingMode === "user" && (
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <FlipHorizontal2 className="w-4 h-4" />
+                  <span>{mirrorFrontCamera ? "Mirror ON" : "Mirror OFF"}</span>
+                </div>
+              )}
+            </div>
 
             <div className="relative w-full aspect-video bg-slate-900 rounded-lg border border-slate-700 overflow-hidden flex items-center justify-center">
               {!preview ? (
@@ -230,7 +312,7 @@ export default function CameraCaptureDialog() {
                     className={`w-full h-full object-contain bg-black`}
                     style={{
                       transform: `${
-                        facingMode === "user" ? "scaleX(-1) " : "scaleX(1)"
+                        shouldMirrorPreview ? "scaleX(-1) " : "scaleX(1)"
                       }`,
                     }}
                   />
