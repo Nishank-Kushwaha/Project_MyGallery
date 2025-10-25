@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Store from "../store";
 import { useNavigate } from "react-router-dom";
+import { RefreshCw } from "lucide-react";
 
 export default function CameraCaptureDialog() {
   const [description, setDescription] = useState("");
@@ -17,6 +18,7 @@ export default function CameraCaptureDialog() {
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     return isMobile ? "environment" : "user"; // back camera on mobile, front on desktop
   });
+  const [isSwitching, setIsSwitching] = useState(false);
 
   const navigate = useNavigate();
 
@@ -128,6 +130,11 @@ export default function CameraCaptureDialog() {
   };
 
   const switchCamera = async () => {
+    // If already switching, ignore repeated clicks
+    if (isSwitching) return;
+
+    setIsSwitching(true);
+
     // Stop current camera
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -148,6 +155,9 @@ export default function CameraCaptureDialog() {
     } catch (err) {
       console.error("Error switching camera:", err);
       alert("Could not switch camera. Please check permissions.");
+    } finally {
+      // small delay to allow animation to be visible; remove/change as desired
+      setTimeout(() => setIsSwitching(false), 600);
     }
   };
 
@@ -235,12 +245,18 @@ export default function CameraCaptureDialog() {
                   >
                     Capture
                   </button>
+
                   <button
                     onClick={switchCamera}
-                    className="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition"
+                    aria-label="Switch camera"
+                    className="flex items-center justify-center gap-2 flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition"
                   >
-                    🔄 Switch Camera
+                    <RefreshCw
+                      className={`w-5 h-5 ${isSwitching ? "animate-spin" : ""}`}
+                    />
+                    <span className="text-sm font-medium">Switch Camera</span>
                   </button>
+
                   <button
                     onClick={closeDialog}
                     className="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition"
