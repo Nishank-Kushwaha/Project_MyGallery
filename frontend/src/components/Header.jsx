@@ -93,6 +93,7 @@ const Header = () => {
                     title="Close Menu"
                     type="button"
                     onClick={() => setIsOpen(false)}
+                    style={{ margin: "5px" }}
                   >
                     <X size={15} />
                   </button>
