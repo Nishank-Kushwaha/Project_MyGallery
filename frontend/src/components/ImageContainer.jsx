@@ -41,7 +41,7 @@ const Image = ({ img, onImageClick, index, setImages }) => {
           },
           credentials: "include", // 🔥 this sends & accepts cookies
           body: JSON.stringify(deleteImageDetails),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -142,7 +142,7 @@ const Modal = ({ img, isOpen, onClose, onNext, onPrev }) => {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors z-10"
+          className="absolute -top-11 right-0 text-white hover:text-gray-300 transition-colors z-10"
         >
           <X size={32} />
         </button>
@@ -220,7 +220,7 @@ const ImageContainer = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
