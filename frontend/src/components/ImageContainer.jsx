@@ -3,6 +3,7 @@ import {
   X,
   ZoomIn,
   Trash2,
+  Link,
   Download,
   Heart,
   Share2,
@@ -11,11 +12,13 @@ import {
 } from "lucide-react";
 
 import Store from "../store";
+import CopyURLDialog from "../routes/CopyURLDialog";
 
 const Image = ({ img, onImageClick, index, setImages }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const handleDelete = async (e) => {
     e.stopPropagation();
@@ -66,70 +69,98 @@ const Image = ({ img, onImageClick, index, setImages }) => {
     }
   };
 
+  const onShareClick = (e) => {
+    e.stopPropagation();
+    setShareOpen(true);
+  };
+
   return (
-    <div
-      className="group relative overflow-hidden rounded-xl bg-gray-900 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-      onClick={() => onImageClick(index)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="aspect-square relative">
-        {!imageError ? (
-          <img
-            src={img.src}
-            alt={img.name}
-            className={`w-full h-full object-cover transition-all duration-500 ${
-              isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110"
-            } ${isHovered ? "scale-110" : "scale-100"}`}
-            onLoad={() => setIsLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          // Error placeholder
-          <div className="w-full h-full flex items-center justify-center bg-gray-700">
-            <Camera size={48} className="text-gray-500" />
-          </div>
-        )}
-
-        {/* Loading skeleton */}
-        {!isLoaded && !imageError && (
-          <div className="absolute inset-0 bg-gray-700 animate-pulse" />
-        )}
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Image info overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <h3 className="font-semibold text-lg">{img.name}</h3>
-          {img.description && (
-            <p className="text-sm text-gray-300 mt-1">{img.description}</p>
+    <>
+      {" "}
+      {/* ← wrap in fragment */}
+      <div
+        className="group relative overflow-hidden rounded-xl bg-gray-900 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="aspect-square relative">
+          {!imageError ? (
+            <img
+              src={img.src}
+              alt={img.name}
+              className={`w-full h-full object-cover transition-all duration-500 ${
+                isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110"
+              } ${isHovered ? "scale-110" : "scale-100"}`}
+              onLoad={() => setIsLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            // Error placeholder
+            <div className="w-full h-full flex items-center justify-center bg-gray-700">
+              <Camera size={48} className="text-gray-500" />
+            </div>
           )}
-          <p className="text-xs text-gray-400 mt-2">
-            {img.uploadDate && new Date(img.uploadDate).toLocaleDateString()}
-          </p>
-        </div>
 
-        {/* Hover icons */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
-          <button
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageClick(index);
-            }}
-          >
-            <ZoomIn size={16} />
-          </button>
-          <button
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
-            onClick={handleDelete}
-          >
-            <Trash2 size={25} />
-          </button>
+          {/* Loading skeleton */}
+          {!isLoaded && !imageError && (
+            <div className="absolute inset-0 bg-gray-700 animate-pulse" />
+          )}
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+          {/* Image info overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+            <h3 className="font-semibold text-lg">{img.name}</h3>
+            {img.description && (
+              <p className="text-sm text-gray-300 mt-1">{img.description}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-2">
+              {img.uploadDate && new Date(img.uploadDate).toLocaleDateString()}
+            </p>
+          </div>
+
+          {/* Hover icons */}
+          <div className="absolute top-4 right-4 flex gap-1.5 transition-all duration-300 transform translate-x-0">
+            {/* Zoom */}
+            <button
+              className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onImageClick(index);
+              }}
+              title="Zoom image"
+            >
+              <ZoomIn size={16} />
+            </button>
+
+            {/* Share / Copy Link */}
+            <button
+              className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
+              onClick={onShareClick}
+              title="Share"
+            >
+              <Link size={16} />
+            </button>
+
+            {/* Delete */}
+            <button
+              className="p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-red-600/80 transition-colors"
+              onClick={handleDelete}
+              title="Delete image"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      {/* Copy URL Dialog */}
+      <CopyURLDialog
+        imageUrl={img.src}
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+      />
+    </>
   );
 };
 

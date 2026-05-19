@@ -23,6 +23,8 @@ import UpdatePassword, {
 import UploadPhoto, { UploadPhotoAction } from "./routes/UploadPhoto.jsx";
 import CameraCaptureDialog from "./routes/CameraCaptureDialog.jsx";
 
+import SharePage from "./routes/SharePage.jsx";
+
 import PageNotFound from "./components/PageNotFound.jsx";
 
 import Store from "./store/index.js";
@@ -82,6 +84,10 @@ const router = createBrowserRouter([
         element: <CameraCaptureDialog />,
       },
       {
+        path: "/share/:encoded",
+        element: <SharePage />,
+      },
+      {
         path: "*",
         element: <PageNotFound />,
       },
@@ -94,5 +100,5 @@ createRoot(document.getElementById("root")).render(
     <Provider store={Store}>
       <RouterProvider router={router} />
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );
